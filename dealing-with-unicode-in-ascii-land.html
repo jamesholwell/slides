@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+
+	<title>Dealing with Uñiçöde in ASCII-land</title>
+	<meta name="author" content="James Holwell" />
+	<meta name="description"
+		content="Lightning talk about transliteration in .NET, focussing on transforming accented characters to their ASCII equivalents" />
+
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+	<link rel="stylesheet" href="styles/reset.css" />
+
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Rubik&display=swap" rel="stylesheet">
+
+	<!-- styles for reveal.js -->
+	<link rel="stylesheet" href="reveal/reveal.css" />
+	<link rel="stylesheet" href="reveal/themes/moon.css" />
+	<link rel="stylesheet" href="reveal/highlight-themes/atom-one-dark.css" />
+
+	<!-- customised styles -->
+	<link rel="stylesheet" href="styles/main.css" />
+</head>
+
+<body class="reveal">
+	<div class="slides">
+
+		<section class="left">
+			<h1 style="margin-bottom: 95px;">Dealing with Uñiçöde in ASCII-land</h1>
+			<img src="images/abstract-leap-logo-reversed.png" style="height: 100px; float: right" />
+			<h2 class="grey">James Holwell</h2>
+			<p>
+				<a href="https://twitter.com/jamesholwell" class="grey">@jamesholwell</a>
+			</p>
+		</section>
+
+		<section>
+			<h2 class="left pad">A long time ago in a character set far,<br /> far, away....</h2>
+		</section>
+
+		<section data-transition="zoom-in fade-out">
+			<h2>ASCII</h2>
+			<img src="https://upload.wikimedia.org/wikipedia/commons/c/cf/USASCII_code_chart.png" alt="ASCII code table"
+				class="r-stretch" />
+			<p>The original 7-bit encoding (95 printable characters)</p>
+		</section>
+
+		<section data-auto-animate>
+			<h2>Curiously Absent: <em>Europeans</em></h2>
+			<div class="left">
+				<p>- Caf<span class="hot-magenta">é</span></p>
+				<p>- M<span class="hot-magenta">ü</span>ller Corner</p>
+				<p>- Wei<span class="hot-magenta">ß</span>bier</p>
+
+			</div>
+		</section>
+
+		<section data-auto-animate>
+			<h2>Curiously Absent: <em>Europeans</em></h2>
+			<div class="left">
+				<p>- Caf<span class="hot-magenta">é</span></p>
+				<p>- M<span class="hot-magenta">ü</span>ller Corner</p>
+				<p>- Wei<span class="hot-magenta">ß</span>bier</p>
+
+			</div>
+			<h2>...fixed by ISO-8859-1</h2>
+			<p>(but still missing €)</p>
+		</section>
+
+		<section data-auto-animate>
+			<h2>Curiously Absent: <em>Europeans</em></h2>
+			<div class="left">
+				<p>- Caf<span class="hot-magenta">é</span></p>
+				<p>- M<span class="hot-magenta">ü</span>ller Corner</p>
+				<p>- Wei<span class="hot-magenta">ß</span>bier</p>
+
+			</div>
+			<h2>...fixed by ISO-8859-1</h2>
+			<p>(but still missing €)</p>
+			<h2>...but what if you aren't European?</p>
+		</section>
+
+		<section>
+			<h2>Unicode</h2>
+			<blockquote class="light-grey">
+				Unicode, &hellip; is a text encoding standard &hellip; designed to support the use of text written in
+				all of the world's major writing systems. <br /><br />
+				Version 15.1 of the standard defines <span class="hot-magenta">149,813</span> characters and 161 scripts
+				used in various ordinary, literary, academic, and technical contexts.
+			</blockquote>
+		</section>
+
+		<section data-auto-animate>
+			<h2>...and so it was settled</h2>
+		</section>
+
+		<section data-auto-animate>
+			<h2>...and so it was settled</h2>
+			<p class="r-fit-text white">Everything shall use Unicode</h1>
+		</section>
+
+		<section class="left">
+			<blockquote class="fragment light-grey wide">
+				<span class="hot-magenta">The metadata specified is invalid. It has characters that are not permitted</span><br /><br />
+				<div class="small">
+					It appears these characters are not permitted in the metadata?<br /><br />
+					<code>š Š ñ Ñ ç Ç ÿ Ÿ ž Ž Ð œ Œ « » éèëêð ÉÈËÊ àâä ÀÁÂÃÄÅ àáâãäå ÙÚÛÜ ùúûüµ òóôõöø ÒÓÔÕÖØ ìíîï ÌÍÎÏ</code><br /><br />
+					There seems to be no clarification in the documentation regarding this.
+				</div>
+			</blockquote>
+
+			<blockquote class="fragment light-grey wide">
+				Microsoft: <br />
+				<em class="small white">The supported characters in the blob metadata must be ASCII characters.</em>
+			</blockquote>
+
+			<!-- https://github.com/Azure/azure-sdk-for-net/issues/178 -->
+		</section>
+
+		<section>
+			<h2 data-id="code-title">No problem!</h2>
+			<pre><code class="hljs csharp" data-trim data-line-numbers="|5-6">
+				[Fact]
+				public void RemoveNonAscii() {
+					const string input = "Lunch at the café: a weißbier for me please";
+            
+					var r = new Regex("[^A-Za-z0-9]");
+					var actual = r.Replace(input, "_");
+					&hellip;
+				}
+			</code></pre>
+		</section>
+
+		<section>
+			<pre><code class="hljs csharp" data-trim data-line-numbers="8">
+				[Fact]
+				public void RemoveNonAscii() {
+					const string input = "Lunch at the café: a weißbier for me please";
+            
+					var r = new Regex("[^A-Za-z0-9]");
+					var actual = r.Replace(input, "_");
+			
+					const string expected = "Lunch_at_the_caf___a_wei_bier_for_me_please";
+					Assert.Equal(expected, actual);
+				}
+			</code></pre>
+		</section>
+
+		<section>
+			<h2 data-id="code-title">Second time's the charm!</h2>
+			<pre><code class="hljs csharp" data-trim data-line-numbers="5,8">
+				[Fact]
+				public void RemoveNonAscii2() {
+					const string input = "Lunch at the café: a weißbier for me please";
+						
+					var r = new Regex("[^A-Za-z0-9 _':-]");
+					var actual = r.Replace(input, "_");
+			
+					const string expected = "Lunch at the caf_: a wei_bier for me please";
+					Assert.Equal(expected, actual);
+				}
+			</code></pre>
+		</section>
+
+		<section class="left">
+			<h2>Transliteration</h2>
+			<blockquote class="light-grey">
+				Transliteration is the general process of converting characters from one script to another, where the result is roughly phonetic for languages in the target script. <br /><br />
+
+				For example, "Phobos" and "Deimos" are transliterations of Greek mythological "Φόβος" and "Δεῖμος" into Latin letters, used to name the moons of Mars.
+			</blockquote>
+
+			<p class="small">
+				See <a href="https://cldr.unicode.org/index/cldr-spec/transliteration-guidelines" target="_blank">https://cldr.unicode.org/index/cldr-spec/transliteration-guidelines</a>
+			</p>
+		</section>
+
+		<section class="left">
+			<h2>Decomposition</h2>
+
+			<p class="r-fit-text white">
+                ü = u + ◌̈
+			</h1>
+
+
+			<p class="small">
+				See <a href="https://unicode.org/reports/tr15/" target="_blank">https://unicode.org/reports/tr15/</a>
+			</p>
+		</section>
+		
+		<section>
+			<h2 data-id="code-title">Asking .NET to decompose the string:</h2>
+			<pre><code class="hljs csharp" data-trim data-line-numbers="6|9">
+				[Fact]
+				public void DecomposeAndRemoveNonAscii() {
+					const string input = "Lunch at the café: a weißbier for me please";
+            
+					var r = new Regex("[^A-Za-z0-9 _':-]");
+					var decomposed = input.Normalize(NormalizationForm.FormKD);
+					var actual = r.Replace(decomposed, string.Empty);
+			
+					const string expected = "Lunch at the cafe: a weibier for me please";
+					Assert.Equal(expected, actual);
+				}
+			</code></pre>
+		</section>
+
+		<section>
+			<h2 data-id="code-title">Exceptions that prove the rule</h2>
+			<pre><code class="hljs csharp" data-trim data-line-numbers="6|10">
+				[Fact]
+				public void DecomposeAndReplaceNonAscii() {
+					const string input = "Lunch at the café: a weißbier for me please";
+						
+					var r = new Regex("[^A-Za-z0-9 _':-]");
+					var replaced = input.Replace("ß", "ss");
+					var decomposed = replaced.Normalize(NormalizationForm.FormKD);
+					var actual = r.Replace(decomposed, string.Empty);
+			
+					const string expected = "Lunch at the cafe: a weissbier for me please";
+					Assert.Equal(expected, actual);
+				}
+			</code></pre>
+		</section>
+
+		<section style="text-align: left;">
+			<h1>Thanks!</h1>
+			<p>
+				- Check out Joel Spolsky's <a
+					href="https://www.joelonsoftware.com/2003/10/08/the-absolute-minimum-every-software-developer-absolutely-positively-must-know-about-unicode-and-character-sets-no-excuses/"
+					target="_blank">Absolute Minimum&hellip;</a> article <br />
+				- Read more about <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string.normalize"
+					target="_blank"><code>String.Normalize()</code></a> <br />
+				- Unicode's <a href="https://cldr.unicode.org/index/cldr-spec/transliteration-guidelines"
+					target="_blank">Transliteration Guidelines</a> <br />
+				- Built with <a href="https://github.com/hakimel/reveal.js" target="_blank">reveal.js</a>
+			</p>
+
+			<div style="text-align: right; margin-top: 95px">
+				<img src="images/abstract-leap-logo-reversed.png" style="height: 80px; margin: 0; float: left;" />
+				<p style="margin-top: 0">
+					James Holwell <br />
+					<a href="https://twitter.com/jamesholwell" class="grey">@jamesholwell</a>
+				</p>
+			</div>
+		</section>
+
+	</div>
+
+	<script src="reveal/reveal.js"></script>
+	<script src="reveal/plugins/markdown.js"></script>
+	<script src="reveal/plugins/highlight.js"></script>
+	<script>
+		Reveal.initialize({
+			controls: true,
+			progress: true,
+			center: true,
+			hash: true,
+			transition: 'fade',
+			plugins: [RevealMarkdown, RevealHighlight]
+		});
+	</script>
+
+</body>
+
+</html>
