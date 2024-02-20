@@ -1,0 +1,55 @@
+.small {
+    font-size: 80%;
+}
+
+.large {
+    font-size: 115%;
+}
+
+
+.left {
+    text-align: left;
+}
+
+h2.pad {
+    padding: 0 80px 50px;
+}
+
+.grey {
+    color: #bbb !important;
+}
+
+.light-grey {
+    color: #ddd !important;
+}
+
+.white {
+    color: #fff !important;
+}
+
+.hot-magenta {
+    color: #FE1FD3 !important;
+}
+
+.azure {
+    color: #0082FF !important;
+}
+
+.heliotrope {
+    color: #BC68FF !important;
+}
+
+.reveal blockquote {
+    padding: 50px;
+    font-size: 85%;
+    text-align: left;
+    font-style: normal;
+}
+
+.reveal blockquote.wide {
+    width: 85%;
+}
+
+code {
+    font-size: 120%;
+}
